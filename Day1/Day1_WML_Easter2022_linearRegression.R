@@ -107,85 +107,79 @@ ggplot(data = econ.df,
 ### END SOLUTION
 
 ### BEGIN SOLUTION
-p <- ggplot(data = econ.df,
+ggplot(data = econ.df,
        aes(x      = CPI,
            y      = HDI,
            colour = Region,
            size   = Population))+
     geom_point ()
-p
 ### END SOLUTION
 
 ### BEGIN SOLUTION
-p<-ggplot(data = econ.df,
+ggplot(data = econ.df,
        aes(x      = CPI,
            y      = HDI,
            colour = Region,
            size   = Population))+
     geom_point (alpha=0.5) +
     scale_size(range = c(0,15))
-p
 ### END SOLUTION
 
 reg <- lm(HDI ~ CPI, data=econ.df)
 reg
+performance::performance(reg) ## r2 = .494
+## Naively looks at adding other x's
+reg_naive <- lm(HDI ~ CPI + Region + Population,
+                data = econ.df)
+performance::performance(reg_naive) ## r2=.805
+# reg_naive2 <- lm(HDI ~ CPI + Region + Population + HDI.Rank,
+#                 data = econ.df)
+# performance::performance(reg_naive2) ## r2=.979, though HDI.rank, is made after the fact.
 
 # or for more complete results
 summary(reg)
+summary(reg_naive) ## some Regions quite meaningful, pop is not.
 
 ### BEGIN SOLUTION
+## add prediction as a column
 econ.df$linearFitHDI=predict(reg)
 head(econ.df)
 ### END SOLUTION
 
-### BEGIN SOLUTION
-p<-ggplot(data = econ.df,
-       aes(x      = CPI,
-           y      = HDI,
-           colour = Region,
-           size   = Population)) +
-    geom_point (alpha=0.5) +
-    scale_size(range = c(0,15)) +
-    geom_line(aes(y      = linearFitHDI,
-                  colour = NULL,
-                  size   = NULL))
-p
-### END SOLUTION
-
-### BEGIN SOLUTION
+### BEGIN SOLUTION ## manual linear
 ggplot(data = econ.df,
        aes(x      = CPI,
            y      = HDI)) +
-    geom_point (alpha=0.5,
+    geom_point(alpha = 0.5,
        aes(colour = Region,
            size   = Population)) +
-    scale_size(range = c(0,15)) +
+    scale_size(range = c(0, 15)) +
     geom_line(aes(y = linearFitHDI))
 ### END SOLUTION
 
-### BEGIN SOLUTION
+### BEGIN SOLUTION ## geom_smooth loess
 ggplot(data = econ.df,
-       aes(x      = CPI,
-           y      = HDI)) +
-    geom_point (alpha=0.5,
-               aes(colour = Region,
-                   size   = Population)) +
-    scale_size(range = c(0,15)) +
-    geom_smooth(method = 'loess')
+       aes(x = CPI,
+           y = HDI)) +
+  geom_point(alpha=0.5,
+             aes(colour = Region,
+                 size   = Population)) +
+  scale_size(range = c(0, 15)) +
+  geom_smooth(method = 'loess')
 ### END SOLUTION
 
-### BEGIN SOLUTION
+### BEGIN SOLUTION ## geom_smooth lm
 ggplot(data = econ.df,
-       aes(x      = CPI,
-           y      = HDI)) +
-    geom_point (alpha=0.5,
+       aes(x = CPI,
+           y = HDI)) +
+    geom_point(alpha=0.5,
        aes(colour = Region,
            size   = Population)) +
     scale_size(range = c(0,15)) +
     geom_smooth(method = 'lm', se=FALSE)
 ### END SOLUTION
 
-### BEGIN SOLUTION
+### BEGIN SOLUTION ## geom_smooth lm with log(x)
 ggplot(data = econ.df,
        aes(x      = CPI,
            y      = HDI)) +
@@ -261,12 +255,10 @@ search <- regsubsets(MEDV ~ .,
                      nvmax = dim(train.df)[2],
                      method = "exhaustive")
 
-
-
 sum <- summary(search)
 sum$which
 
-t(t(sum$adjr2))
+matrix(sum$adjr2)
 # top 3 models
 models <- order(sum$adjr2, decreasing = T)[1:3]
 models
